@@ -1,0 +1,21 @@
+# OS / editor noise
+.DS_Store
+Thumbs.db
+*.swp
+.idea/
+.vscode/
+
+# Claude Code local/runtime/personal (the shared toolkit IS tracked here)
+.claude/settings.local.json
+.claude/scheduled_tasks.lock
+.claude/inbox/
+.claude/outbox/
+.claude/worktrees/
+.claude/memory/
+
+# Secrets — never commit
+.mcp.json
+.env
+.env.*
+*.key
+*.pem

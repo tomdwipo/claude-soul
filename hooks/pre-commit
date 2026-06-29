@@ -1,0 +1,48 @@
+#!/usr/bin/env bash
+# claude-soul — harvest gate (git-native, TOOL-AGNOSTIC).
+#
+# The portable floor of the capture gate: git runs this on every `git commit`, so it enforces
+# "harvest a learning before committing" no matter which AI tool (Claude Code, Cursor, Gemini, Kiro,
+# …) — or a plain human at the terminal — makes the commit. Claude Code users additionally get the
+# richer PreToolUse variant (.claude/learn-gate.sh) that injects the engine on block; this hook is the
+# common denominator that survives a tool switch.
+#
+# Blocks the commit UNLESS one of:
+#   (a) a learning file is staged under .docs/principles or .docs/common-issues, OR
+#   (b) you opt out consciously with  SOUL_NO_LESSONS=1 git commit …
+# The hook never decides WHETHER there's a lesson (that's your/the agent's judgment) — it forces the
+# decision to be RECORDED at the one chokepoint every change passes through.
+#
+# Activate:  git config core.hooksPath hooks
+#        or: cp hooks/pre-commit .git/hooks/pre-commit && chmod +x .git/hooks/pre-commit
+# Best-effort: on any internal error it falls through to ALLOW — a gate must never wedge committing.
+set -u
+
+# (b) conscious opt-out — explicit env var (preferred over `--no-verify`, which skips ALL hooks).
+[ "${SOUL_NO_LESSONS:-}" = "1" ] && exit 0
+
+ROOT="$(git rev-parse --show-toplevel 2>/dev/null || pwd)"
+
+# (a) a learning is staged in THIS commit → harvested → allow.
+if git diff --cached --name-only 2>/dev/null | grep -Eq '^\.docs/(principles|common-issues)/'; then
+  exit 0
+fi
+
+# Otherwise: BLOCK + surface the engine.
+HTL="$ROOT/.docs/principles/how-to-learn.md"
+{
+  echo "🛑 HARVEST GATE — commit blocked: no learning staged this commit."
+  echo ""
+  echo "Pick ONE, then commit again:"
+  echo "  • There IS a lesson → distil it (engine below), write it under .docs/principles/"
+  echo "                        (judgment/taste) or .docs/common-issues/ (test-settled rule),"
+  echo "                        'git add' it, then commit again."
+  echo "  • There is NONE     → opt out consciously:  SOUL_NO_LESSONS=1 git commit …"
+  echo ""
+  if [ -f "$HTL" ]; then
+    echo "── how-to-learn (distillation engine) ─────────────────────"
+    cat "$HTL"
+    echo "───────────────────────────────────────────────────────────"
+  fi
+} >&2
+exit 1
