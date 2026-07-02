@@ -16,7 +16,7 @@ IN="$(cat 2>/dev/null || true)"
 case "$IN" in *transcript_path*) : ;; *) exit 0 ;; esac
 
 TP="$(printf '%s' "$IN" | jq -r '.transcript_path // empty' 2>/dev/null || true)"
-[ -n "$TP" ] && [ -f "$TP" ] || exit 0
+if [ -z "$TP" ] || [ ! -f "$TP" ]; then exit 0; fi
 grep -q 'CALIB' "$TP" 2>/dev/null || exit 0   # nothing to capture → don't spawn python
 
 python3 "$CALIB" capture --transcript "$TP" >/dev/null 2>&1 || true
