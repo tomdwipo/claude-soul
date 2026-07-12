@@ -15,6 +15,19 @@ local (no code leaves your machine). Natural-language queries, any human languag
 
 Not shipped in your app — it's an out-of-band dev index that reads the working tree read-only.
 
+## Why these models
+
+| Role | Model | Why it's the default |
+|------|-------|----------------------|
+| **Embedding** | `qwen3-embedding:0.6b` | Strong **general** model (not code-only): its Qwen3 base is trained heavily on code (MTEB-Code ~75) **and** it's good on prose + **multilingual**. A code repo is really *code + docs*, and queries can be in any language — a code-only / English-only embedder would lose on the docs half and non-English queries. Small (~0.6B), Apache-2.0, runs on host Ollama (GPU/Metal). |
+| **Reranker** | `bge-reranker-v2-m3` (int8) | Strong **general multilingual** cross-encoder — reads query+chunk jointly for precise ordering, works well on code+docs, handles non-English queries, Apache-2.0. No strong code-specialized reranker that's also multilingual + permissive. int8 ONNX keeps it CPU-viable. |
+
+**Trade-off (honest):** both are deliberately *general*, not code-specialized. If your work is
+**pure code, English-only**, a code-specialized embedder (e.g. `nomic-embed-code`, `CodeRankEmbed`)
+could edge these on code-only retrieval — but at a cost (bigger, or English/Chinese-only, or a
+non-commercial license). For a mixed code+docs repo with multilingual queries, the general pair is
+the better fit. Swap via `EMBED_MODEL` / `RERANKER_MODEL` if your case differs.
+
 ## Prerequisites
 
 - Docker (Desktop) with **≥ 8 GB** memory (the reranker needs headroom).
