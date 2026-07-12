@@ -14,7 +14,7 @@ command and a `.docs/` knowledge base that gets smarter every session through a 
 
 Most "memory" tools for coding agents store **rules** — facts and conventions to recall. claude-soul also
 captures **how to think**, so each session the agent judges your intent better instead of just remembering
-more rules. Three pieces do that:
+more rules. Four pieces do that:
 
 - **Principle over rule.** If a test/build/lint can settle it, it's a *rule* (`.docs/common-issues/`). If
   it's judgment or taste, it's a *principle* (`.docs/principles/`). Corrections aren't forced into rigid
@@ -24,6 +24,9 @@ more rules. Three pieces do that:
   consumer is proven reliable. ([detail](.docs/principles/delegation-level-match-consumer.md))
 - **Learning loop.** Every lesson is distilled (`.docs/principles/how-to-learn.md`), stored in git, and
   auto-recalled next session — so the more you use it, the sharper its judgment about *your* codebase.
+- **Grounded, not guessing (new).** Ships an optional local semantic-search MCP (`tools/code-rag/`) so
+  the agent retrieves the *actually relevant* code + docs before it answers, plans, or breaks down work —
+  precise `path:line` hits over grep, fully on your machine. ([detail](tools/code-rag/README.md))
 
 ## Install
 
