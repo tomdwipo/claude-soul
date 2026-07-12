@@ -49,6 +49,11 @@ first message.
 6. **Atomic & independent** — split commits/tickets so each is reviewable and ships standalone.
 7. **Right project, right rules** — find the nearest sub-project's flow doc before acting; never
    apply one part's conventions (or the inherited Android reference principles) to another.
+8. **Critical stance, not validation** — default to critical, evidence-aware replies: surface the
+   top weakness first, kill empty validation ("you're right"/"great question"/"perfect"), label
+   confidence `[High/Med/Low]`, hold your position under pushback (insistence ≠ new information),
+   skip warm-up preamble, and mirror the user's language.
+   ([detail](.docs/principles/critical-stance-not-validation.md))
 
 ## Learning loop (how the workspace compounds)
 
