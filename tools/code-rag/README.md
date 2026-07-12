@@ -6,7 +6,10 @@ local (no code leaves your machine). Natural-language queries, any human languag
 
 - **Embedding:** `qwen3-embedding:0.6b` on host **Ollama** (GPU/Metal accelerated — not in Docker).
 - **Vector DB:** Qdrant (Docker, persisted volume).
-- **Retrieval:** hybrid dense + BM25 (RRF) → `bge-reranker-v2-m3` int8 cross-encoder (ONNX).
+- **Retrieval:** hybrid dense + BM25 (RRF) → `bge-reranker-v2-m3` int8 cross-encoder (ONNX). These two
+  models make results **precise**: the embedder+reranker rank genuinely relevant code/docs first, and
+  `RERANK_MIN_SCORE` (default 0.05) drops low-relevance hits — an off-topic query returns nothing
+  instead of noise. Calibrate the cutoff per model (probe good vs garbage query; put it in the gap).
 - **Auto-index + prune:** a watcher re-embeds only changed chunks and prunes stale/deleted ones, so
   the index tracks the working tree (edits, branch switches) with no manual rebuild.
 
@@ -66,7 +69,7 @@ multi-project both bind Qdrant on 6333 — run one mode at a time.
 ## Configuration (env / `.env`)
 
 `INCLUDE_EXT` / `EXCLUDE_DIRS` (comma-separated — tune for your stack), `TOP_K` (default 15),
-`RERANK_CANDIDATES` (50), `RERANK_TEXT_CHARS` (256), `RERANK_TIMEOUT` (60), `RERANK_ENABLED`,
+`RERANK_CANDIDATES` (50), `RERANK_TEXT_CHARS` (256), `RERANK_MIN_SCORE` (0.05), `RERANK_TIMEOUT` (60), `RERANK_ENABLED`,
 `ORT_THREADS`, `EMBED_MODEL`, `COLLECTION`, `HF_TOKEN` (optional, faster model downloads).
 `search_code(query, top_k, candidates)` — the caller can override per query.
 

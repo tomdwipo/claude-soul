@@ -32,6 +32,7 @@ class Config(BaseModel):
     rerank_enabled: bool = os.getenv("RERANK_ENABLED", "true").lower() == "true"
     rerank_timeout: float = float(os.getenv("RERANK_TIMEOUT", "60"))
     rerank_text_chars: int = int(os.getenv("RERANK_TEXT_CHARS", "256"))
+    rerank_min_score: float = float(os.getenv("RERANK_MIN_SCORE", "0.05"))
 
 
 cfg = Config()

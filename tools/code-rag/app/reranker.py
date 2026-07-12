@@ -20,4 +20,5 @@ async def rerank(query: str, candidates: list, top_k: int) -> list:
     except Exception as e:
         print(f"[rerank] fallback to hybrid order: {type(e).__name__} {e}", flush=True)
         return candidates[:top_k]
-    return [candidates[item["index"]] for item in ranked[:top_k]]
+    kept = [item for item in ranked if item["score"] >= cfg.rerank_min_score]
+    return [candidates[item["index"]] for item in kept[:top_k]]

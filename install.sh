@@ -122,6 +122,26 @@ else
   say ".gitignore: already configured"
 fi
 
+# ── 5. code-rag — local semantic code+docs search (MCP). Copy the tool, then guide setup. ──
+#    We COPY the tool (so it's present) + check prereqs, but never auto-`make up` from an installer
+#    (it pulls multi-GB models + needs Docker running — that's an explicit, interactive step).
+if [ -d "$SRC/tools/code-rag" ]; then
+  mkdir -p "$TARGET/tools/code-rag"
+  cp -R "$SRC/tools/code-rag/." "$TARGET/tools/code-rag/"
+  rm -rf "$TARGET/tools/code-rag/.venv" "$TARGET/tools/code-rag"/**/__pycache__ 2>/dev/null || true
+  say "code-rag: tools/code-rag/ installed (semantic code search MCP)"
+  MISSING=""
+  command -v docker >/dev/null 2>&1 || MISSING="$MISSING docker"
+  command -v ollama >/dev/null 2>&1 || MISSING="$MISSING ollama"
+  if [ -z "$MISSING" ]; then
+    say "code-rag: Docker + Ollama found → finish setup with:  cd tools/code-rag && make up"
+  else
+    say "code-rag: install prereqs first —$MISSING (Docker: https://docker.com  ·  Ollama: https://ollama.com), then: cd tools/code-rag && make up"
+  fi
+  say "code-rag: then add the 'code-rag' entry from .mcp.json.example to your .mcp.json and restart the agent"
+fi
+
 printf '\n✓ Soul installed. Open the project in Claude Code and it loads on the first message.\n'
 printf '  The harvest gate fires on commit (Claude Code PreToolUse + git-native pre-commit).\n'
-printf '  Next: edit CLAUDE.md, then commit .claude/ .agents/ hooks/ .docs/ CLAUDE.md\n\n'
+printf '  code-rag semantic search: cd tools/code-rag && make up (needs Docker + Ollama).\n'
+printf '  Next: edit CLAUDE.md, then commit .claude/ .agents/ hooks/ .docs/ tools/ CLAUDE.md\n\n'

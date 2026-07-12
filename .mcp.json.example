@@ -10,6 +10,11 @@
       "env": {
         "OPENALEX_EMAIL": "you@example.com"
       }
+    },
+    "code-rag": {
+      "_comment": "Local semantic code+docs search over your repo (see tools/code-rag/). Start it first: cd tools/code-rag && make up (needs Docker + Ollama). Parallel checkouts → code-rag-<folder> on 8080/8081/... See tools/code-rag/README.md.",
+      "type": "http",
+      "url": "http://localhost:8080/mcp"
     }
   }
 }

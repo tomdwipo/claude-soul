@@ -47,3 +47,11 @@ async def test_rerank_reorders_and_truncates(monkeypatch):
 async def test_rerank_empty_candidates(monkeypatch):
     out = await reranker.rerank("q", [], top_k=5)
     assert out == []
+
+
+async def test_rerank_min_score_drops_low(monkeypatch):
+    monkeypatch.setattr(reranker.cfg, "rerank_min_score", 0.05)
+    cands = [_Cand("a"), _Cand("b"), _Cand("c")]
+    _patch(monkeypatch, [{"index": 2, "score": 0.9}, {"index": 0, "score": 0.01}])
+    out = await reranker.rerank("q", cands, top_k=5)
+    assert [c.payload["text"] for c in out] == ["c"]

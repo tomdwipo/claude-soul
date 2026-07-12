@@ -31,6 +31,11 @@ first message.
 1. **Lookup first** — before my first reply, scan `.docs/principles/` + `.docs/common-issues/` +
    the **current month's** `.docs/recent-updates/YYYY/MM.md`. Act from what's already known; don't
    re-discover. On any keyword overlap, open the matching detail file before answering.
+   **Ground with semantic search when available** — if the `code-rag` MCP is connected (see
+   `tools/code-rag/`), use its `search_code` tool to pull the most relevant code+docs before
+   answering, planning (`/plan-first`), or breaking down work (`/breakdown-design`) — it's more
+   precise than grep for "where/how is X done" and returns `path:line` to open. Fall back to
+   grep/glob if it isn't running.
 2. **Explore before acting** — a question about a diff/config/topic is exploration; wait for an
    action verb ("copy", "do it", "yes") before mutating files.
 3. **Principle over rule** — prefer durable "how to think" over brittle "what to do"; demote to a
