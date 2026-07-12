@@ -102,6 +102,28 @@ hooks/pre-commit     ← git-native harvest gate (tool-agnostic floor; works eve
 skills-lock.json     ← pins the vendored skills
 ```
 
+## Semantic code search (`tools/code-rag`)
+
+An optional local **MCP tool** the installer drops in: semantic **+** keyword search over *your*
+repository — source code **and** docs — exposed to any agent as `search_code`. Runs fully local
+(no code leaves your machine), natural-language queries in any language, returns `path:line`.
+
+- **Embedding** `qwen3-embedding:0.6b` on host **Ollama** (GPU/Metal), **vector DB** Qdrant (Docker).
+- **Retrieval** hybrid dense + BM25 (RRF) → `bge-reranker-v2-m3` int8 cross-encoder, then a
+  `RERANK_MIN_SCORE` cutoff — so an off-topic query returns *nothing* instead of noise.
+- **Auto-index + prune** — a watcher re-embeds only changed chunks and drops stale/deleted ones, so
+  the index tracks the working tree (edits, branch switches) with no manual rebuild.
+- Both models are deliberately **general** (code + prose + multilingual), not code-only — a repo is
+  code *and* docs, and queries aren't always English. Swap via `EMBED_MODEL` / `RERANKER_MODEL`.
+
+```bash
+cd tools/code-rag && make up      # needs Docker (≥8 GB) + Ollama; then add the .mcp.json entry
+```
+
+When it's connected, the Operating Soul grounds answers/`/plan-first`/`/breakdown-design` through it
+before falling back to grep. Full guide, multi-checkout mode, and the "why these models" rationale:
+**[`tools/code-rag/README.md`](tools/code-rag/README.md)**.
+
 ## Safe to re-run
 
 The installer **merges**, it does not stomp:
