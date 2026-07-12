@@ -1,0 +1,39 @@
+# Per-checkout stack: watcher + mcp-server, joined to the shared code-rag-net.
+# Driven by env: REPO_ROOT (mounted repo), COLLECTION (usually the folder name),
+# MCP_PORT (published), COMPOSE_PROJECT_NAME (unique per checkout).
+# Shared qdrant + reranker come from docker-compose.shared.yml (must be up first).
+
+services:
+  watcher:
+    build: .
+    command: ["uv", "run", "python", "-m", "app.watcher"]
+    environment:
+      - OLLAMA_URL=http://host.docker.internal:11434
+      - QDRANT_URL=http://qdrant:6333
+      - RERANKER_URL=http://reranker:80
+      - COLLECTION=${COLLECTION}
+      - HF_TOKEN=${HF_TOKEN:-}
+    extra_hosts: ["host.docker.internal:host-gateway"]
+    volumes: ["${REPO_ROOT}:/repo:ro"]
+    networks: [code-rag-net]
+    restart: unless-stopped
+
+  mcp-server:
+    build: .
+    command: ["uv", "run", "python", "-m", "app.mcp_server"]
+    ports: ["${MCP_PORT}:8080"]
+    environment:
+      - OLLAMA_URL=http://host.docker.internal:11434
+      - QDRANT_URL=http://qdrant:6333
+      - RERANKER_URL=http://reranker:80
+      - COLLECTION=${COLLECTION}
+      - HF_TOKEN=${HF_TOKEN:-}
+    extra_hosts: ["host.docker.internal:host-gateway"]
+    volumes: ["${REPO_ROOT}:/repo:ro"]
+    networks: [code-rag-net]
+    restart: unless-stopped
+
+networks:
+  code-rag-net:
+    external: true
+    name: code-rag-net

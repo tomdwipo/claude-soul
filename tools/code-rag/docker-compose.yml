@@ -1,0 +1,46 @@
+services:
+  qdrant:
+    image: qdrant/qdrant:latest
+    ports: ["6333:6333"]
+    volumes: ["qdrant_data:/qdrant/storage"]
+    restart: unless-stopped
+
+  reranker:
+    build: ./reranker_service
+    environment:
+      - RERANKER_MODEL=onnx-community/bge-reranker-v2-m3-ONNX
+      - RERANKER_ONNX_FILE=onnx/model_quantized.onnx
+      - HF_TOKEN=${HF_TOKEN:-}
+    volumes:
+      - hf_cache:/home/app/.cache/huggingface
+    restart: unless-stopped
+
+  mcp-server:
+    build: .
+    command: ["uv", "run", "python", "-m", "app.mcp_server"]
+    ports: ["8080:8080"]
+    environment:
+      - OLLAMA_URL=http://host.docker.internal:11434
+      - QDRANT_URL=http://qdrant:6333
+      - RERANKER_URL=http://reranker:80
+      - HF_TOKEN=${HF_TOKEN:-}
+    extra_hosts: ["host.docker.internal:host-gateway"]
+    volumes: ["${REPO_ROOT:-../..}:/repo:ro"]
+    depends_on: [qdrant, reranker]
+    restart: unless-stopped
+
+  watcher:
+    build: .
+    command: ["uv", "run", "python", "-m", "app.watcher"]
+    environment:
+      - OLLAMA_URL=http://host.docker.internal:11434
+      - QDRANT_URL=http://qdrant:6333
+      - HF_TOKEN=${HF_TOKEN:-}
+    extra_hosts: ["host.docker.internal:host-gateway"]
+    volumes: ["${REPO_ROOT:-../..}:/repo:ro"]
+    depends_on: [qdrant]
+    restart: unless-stopped
+
+volumes:
+  qdrant_data: {}
+  hf_cache: {}

@@ -1,0 +1,32 @@
+name: code-rag-shared
+
+services:
+  qdrant:
+    image: qdrant/qdrant:latest
+    ports: ["6333:6333"]
+    volumes: ["qdrant_data:/qdrant/storage"]
+    networks:
+      code-rag-net:
+        aliases: [qdrant]
+    restart: unless-stopped
+
+  reranker:
+    build: ./reranker_service
+    environment:
+      - RERANKER_MODEL=onnx-community/bge-reranker-v2-m3-ONNX
+      - RERANKER_ONNX_FILE=onnx/model_quantized.onnx
+      - ORT_THREADS=6
+      - HF_TOKEN=${HF_TOKEN:-}
+    volumes: ["hf_cache:/home/app/.cache/huggingface"]
+    networks:
+      code-rag-net:
+        aliases: [reranker]
+    restart: unless-stopped
+
+networks:
+  code-rag-net:
+    name: code-rag-net
+
+volumes:
+  qdrant_data: {}
+  hf_cache: {}
