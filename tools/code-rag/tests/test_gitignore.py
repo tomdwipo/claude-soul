@@ -1,5 +1,6 @@
 import subprocess
 
+from app import gitignore
 from app.gitignore import _ignored_set, is_ignored
 
 
@@ -55,3 +56,22 @@ def test_non_git_directory_fails_open(tmp_path):
     (tmp_path / "whatever.json").write_text("{}", encoding="utf-8")
     _ignored_set.cache_clear()
     assert not is_ignored(str(tmp_path), "whatever.json")
+
+
+def test_ls_files_timeout_retries_then_warns_loudly(tmp_path, monkeypatch, capsys):
+    _init_repo(tmp_path)
+    monkeypatch.setattr(gitignore, "_is_git_repo", lambda root: True)
+
+    calls = {"n": 0}
+
+    def fake_run(cmd, **kwargs):
+        calls["n"] += 1
+        raise subprocess.TimeoutExpired(cmd=cmd, timeout=180)
+
+    monkeypatch.setattr(subprocess, "run", fake_run)
+    _ignored_set.cache_clear()
+
+    assert not is_ignored(str(tmp_path), "secret.json")
+    assert calls["n"] == 2  # one retry, not silently swallowed on the first failure
+    out = capsys.readouterr().out
+    assert "WARNING" in out and "RESPECT_GITIGNORE is NOT active" in out
