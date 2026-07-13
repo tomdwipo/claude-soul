@@ -27,7 +27,7 @@ class Handler(FileSystemEventHandler):
 
 async def run():
     if cfg.startup_jitter_sec > 0:
-        delay = random.uniform(0, cfg.startup_jitter_sec)
+        delay = random.SystemRandom().uniform(0, cfg.startup_jitter_sec)
         print(f"[watch] startup jitter {delay:.1f}s", flush=True)
         await asyncio.sleep(delay)
 
