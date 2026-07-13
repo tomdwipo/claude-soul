@@ -89,11 +89,15 @@ not the server knob.
 
 ## Configuration (env / `.env`)
 
-`INCLUDE_EXT` / `EXCLUDE_DIRS` (comma-separated — tune for your stack), `TOP_K` (default 15),
+`INCLUDE_EXT` / `EXCLUDE_DIRS` / `EXCLUDE_FILES` (comma-separated — tune for your stack;
+`EXCLUDE_FILES` drops generated noise by basename: lockfiles + `lint-baseline.xml` by default,
+so a generated suppression list / lockfile never pollutes search), `TOP_K` (default 15),
 `RERANK_CANDIDATES` (50), `RERANK_TEXT_CHARS` (256), `RERANK_MIN_SCORE` (0.05), `RERANK_TIMEOUT` (60), `RERANK_ENABLED`,
 `ORT_THREADS`, `EMBED_MODEL`, `COLLECTION`, `HF_TOKEN` (optional, faster model downloads).
 Resilience/scaling: `QDRANT_TIMEOUT` (30), `QDRANT_MAX_RETRIES` (3), `EMBED_MAX_RETRIES` (4),
-`EMBED_RETRY_BASE` (0.75 s), `STARTUP_JITTER_SEC` (0 — set when starting many projects at once).
+`EMBED_RETRY_BASE` (0.75 s), `EMBED_BATCH_CHARS` (6000 — sub-batch embed input so a big
+many-chunk file can't overflow the server batch), `STARTUP_JITTER_SEC` (0 — set when starting
+many projects at once).
 `search_code(query, top_k, candidates)` — the caller can override per query.
 
 ## How it works

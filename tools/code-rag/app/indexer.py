@@ -11,7 +11,11 @@ from .embedder import embed
 def iter_files():
     root = Path(cfg.repo_root)
     for p in root.rglob("*"):
-        if p.suffix in cfg.include_ext and not any(d in p.parts for d in cfg.exclude_dirs):
+        if (
+            p.suffix in cfg.include_ext
+            and p.name not in cfg.exclude_files
+            and not any(d in p.parts for d in cfg.exclude_dirs)
+        ):
             yield p, str(p.relative_to(root))
 
 
@@ -31,8 +35,14 @@ async def _index_one(abs_p: Path, rel: str) -> int:
     ]
     if fresh:
         try:
-            vecs = await embed([c.text for c in fresh], is_query=False)
-            store.upsert(fresh, vecs)
+            vecs = await embed([c.text for c in fresh], is_query=False, skip_failed=True)
+            pairs = [(c, v) for c, v in zip(fresh, vecs) if v is not None]
+            if pairs:
+                store.upsert([c for c, _ in pairs], [v for _, v in pairs])
+            dropped = len(fresh) - len(pairs)
+            if dropped:
+                print(f"[index] {rel}: {dropped}/{len(fresh)} chunks dropped (embed failed, retry next pass)", flush=True)
+            fresh = [c for c, _ in pairs]
         except Exception as e:
             print(f"[index] SKIP {rel}: {type(e).__name__} {e}", flush=True)
             return 0

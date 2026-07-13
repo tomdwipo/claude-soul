@@ -39,7 +39,7 @@ def _wire(monkeypatch, tmp_path, fake, embedded):
     monkeypatch.setattr(store, "delete_by_paths", fake.delete_by_paths)
     monkeypatch.setattr(store, "all_indexed_paths", fake.all_indexed_paths)
 
-    async def fake_embed(texts, is_query):
+    async def fake_embed(texts, is_query, skip_failed=False):
         embedded.extend(texts)
         return [[0.0] for _ in texts]
 

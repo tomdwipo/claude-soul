@@ -17,7 +17,11 @@ class Handler(FileSystemEventHandler):
         if event.is_directory:
             return
         p = Path(event.src_path)
-        if p.suffix in cfg.include_ext and not any(d in p.parts for d in cfg.exclude_dirs):
+        if (
+            p.suffix in cfg.include_ext
+            and p.name not in cfg.exclude_files
+            and not any(d in p.parts for d in cfg.exclude_dirs)
+        ):
             self.pending.add(str(p.relative_to(cfg.repo_root)))
 
 

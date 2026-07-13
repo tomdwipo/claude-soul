@@ -22,6 +22,10 @@ class Config(BaseModel):
     repo_root: str = os.getenv("REPO_ROOT", "/repo")
     include_ext: tuple = _csv("INCLUDE_EXT", _DEFAULT_EXT)
     exclude_dirs: tuple = _csv("EXCLUDE_DIRS", _DEFAULT_EXCLUDE)
+    exclude_files: tuple = _csv(
+        "EXCLUDE_FILES",
+        "lint-baseline.xml,package-lock.json,pnpm-lock.yaml,yarn.lock,go.sum,Cargo.lock,poetry.lock,composer.lock",
+    )
     max_chunk_lines: int = int(os.getenv("MAX_CHUNK_LINES", "60"))
     max_chunk_chars: int = int(os.getenv("MAX_CHUNK_CHARS", "2000"))
     overlap_lines: int = int(os.getenv("OVERLAP_LINES", "10"))
@@ -37,6 +41,7 @@ class Config(BaseModel):
     qdrant_max_retries: int = int(os.getenv("QDRANT_MAX_RETRIES", "3"))
     embed_max_retries: int = int(os.getenv("EMBED_MAX_RETRIES", "4"))
     embed_retry_base: float = float(os.getenv("EMBED_RETRY_BASE", "0.75"))
+    embed_batch_chars: int = int(os.getenv("EMBED_BATCH_CHARS", "6000"))
     startup_jitter_sec: float = float(os.getenv("STARTUP_JITTER_SEC", "0"))
 
 
