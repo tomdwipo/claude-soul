@@ -6,6 +6,7 @@ from . import qdrant_store as store
 from .chunker import chunk_file
 from .config import cfg
 from .embedder import embed
+from .gitignore import is_ignored
 
 
 def iter_files():
@@ -16,7 +17,10 @@ def iter_files():
             and p.name not in cfg.exclude_files
             and not any(d in p.parts for d in cfg.exclude_dirs)
         ):
-            yield p, str(p.relative_to(root))
+            rel = str(p.relative_to(root))
+            if cfg.respect_gitignore and is_ignored(cfg.repo_root, rel):
+                continue
+            yield p, rel
 
 
 async def _index_one(abs_p: Path, rel: str) -> int:

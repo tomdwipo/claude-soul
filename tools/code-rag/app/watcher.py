@@ -6,6 +6,7 @@ from watchdog.events import FileSystemEventHandler
 from watchdog.observers import Observer
 
 from .config import cfg
+from .gitignore import is_ignored
 from .indexer import index_paths
 
 
@@ -22,7 +23,10 @@ class Handler(FileSystemEventHandler):
             and p.name not in cfg.exclude_files
             and not any(d in p.parts for d in cfg.exclude_dirs)
         ):
-            self.pending.add(str(p.relative_to(cfg.repo_root)))
+            rel = str(p.relative_to(cfg.repo_root))
+            if cfg.respect_gitignore and is_ignored(cfg.repo_root, rel):
+                return
+            self.pending.add(rel)
 
 
 async def run():

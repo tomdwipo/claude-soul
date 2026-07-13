@@ -24,8 +24,9 @@ class Config(BaseModel):
     exclude_dirs: tuple = _csv("EXCLUDE_DIRS", _DEFAULT_EXCLUDE)
     exclude_files: tuple = _csv(
         "EXCLUDE_FILES",
-        "lint-baseline.xml,package-lock.json,pnpm-lock.yaml,yarn.lock,go.sum,Cargo.lock,poetry.lock,composer.lock",
+        "lint-baseline.xml,package-lock.json,pnpm-lock.yaml,yarn.lock,go.sum,Cargo.lock,poetry.lock,composer.lock,.mcp.json",
     )
+    respect_gitignore: bool = os.getenv("RESPECT_GITIGNORE", "true").lower() == "true"
     index_vector_drawables: bool = os.getenv("INDEX_VECTOR_DRAWABLES", "false").lower() == "true"
     max_chunk_lines: int = int(os.getenv("MAX_CHUNK_LINES", "60"))
     max_chunk_chars: int = int(os.getenv("MAX_CHUNK_CHARS", "2000"))

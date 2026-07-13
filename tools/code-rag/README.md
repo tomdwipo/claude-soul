@@ -33,6 +33,24 @@ the better fit. Swap via `EMBED_MODEL` / `RERANKER_MODEL` if your case differs.
 - Docker (Desktop) with **≥ 8 GB** memory (the reranker needs headroom).
 - [Ollama](https://ollama.com) running on the host (Apple Silicon → Metal; NVIDIA → CUDA).
 
+## Security
+
+The watcher/mcp-server mount your repo `:ro` and read the **filesystem** — `.gitignore` keeps a
+secret out of a *commit*, it does nothing by itself against a local tool walking the working tree.
+`RESPECT_GITIGNORE` (default `true`) closes that gap: both the watcher and the full-index pass ask
+`git ls-files --others --ignored --exclude-standard` (delegated to git itself, not a hand-rolled
+parser, so nested `.gitignore`, global excludes, and `.git/info/exclude` are all honored) and skip
+anything git would ignore — `.mcp.json`, `service-account.json`, `.env`, whatever your `.gitignore`
+already lists, all excluded automatically with zero per-project configuration. Fails open (indexes
+normally) if `REPO_ROOT` isn't a git repo, so it never blocks a non-git checkout.
+
+Belt-and-suspenders: `EXCLUDE_FILES` still applies on top (default includes `.mcp.json` even with
+`RESPECT_GITIGNORE=false`), and a file that's `git add`-ed *before* a `.gitignore` rule existed
+stays visible (git doesn't retroactively hide tracked files — same as `git status`). If a secret
+was already indexed before this existed, purge it: `curl -X DELETE
+http://localhost:6333/collections/<name>` (collections are isolated per project — this only
+touches that one), then reindex.
+
 ## Quickstart (single repo)
 
 ```bash
@@ -88,6 +106,13 @@ not the server knob.
 | `make down-project [REPO_ROOT=/path]` / `make logs-project` | stop / tail a per-checkout stack |
 
 ## Configuration (env / `.env`)
+
+`INCLUDE_EXT` / `EXCLUDE_DIRS` / `EXCLUDE_FILES` and `HF_TOKEN` / `COLLECTION` /
+`STARTUP_JITTER_SEC` are forwarded into the containers by both compose files (`${VAR:-default}` in
+their `environment:` blocks) — set them in `.env` or your shell and `make up`/`make up-project`
+picks them up. The rest below (`TOP_K`, `RERANK_*`, `ORT_THREADS`, `EMBED_MODEL`, resilience knobs)
+are read by `app/config.py` but **not yet wired through either compose file** — override them by
+editing the `environment:` list directly if you need to change one.
 
 `INCLUDE_EXT` / `EXCLUDE_DIRS` / `EXCLUDE_FILES` (comma-separated — tune for your stack;
 `EXCLUDE_FILES` drops generated noise by basename: lockfiles + `lint-baseline.xml` by default,

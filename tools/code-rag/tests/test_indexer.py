@@ -97,3 +97,26 @@ async def test_full_run_sweep_removes_gone_files(tmp_path, monkeypatch):
     (tmp_path / "B.kt").unlink()
     await indexer.index_paths()
     assert fake.all_indexed_paths() == {"A.kt"}
+
+
+async def test_gitignored_file_skipped(tmp_path, monkeypatch):
+    fake, embedded = FakeStore(), []
+    _wire(monkeypatch, tmp_path, fake, embedded)
+    (tmp_path / "A.kt").write_text("fun a() {}\n", encoding="utf-8")
+    (tmp_path / "secret.json").write_text('{"token": "shh"}\n', encoding="utf-8")
+    monkeypatch.setattr(indexer, "is_ignored", lambda root, rel: rel == "secret.json")
+
+    await indexer.index_paths()
+    assert fake.all_indexed_paths() == {"A.kt"}
+    assert not any("shh" in t for t in embedded)
+
+
+async def test_respect_gitignore_false_indexes_anyway(tmp_path, monkeypatch):
+    fake, embedded = FakeStore(), []
+    _wire(monkeypatch, tmp_path, fake, embedded)
+    monkeypatch.setattr(indexer.cfg, "respect_gitignore", False)
+    (tmp_path / "secret.json").write_text('{"token": "shh"}\n', encoding="utf-8")
+    monkeypatch.setattr(indexer, "is_ignored", lambda root, rel: True)
+
+    await indexer.index_paths()
+    assert fake.all_indexed_paths() == {"secret.json"}

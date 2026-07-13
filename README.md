@@ -124,8 +124,11 @@ cd tools/code-rag && make up      # needs Docker (≥8 GB) + Ollama; then add th
 ```
 
 When it's connected, the Operating Soul grounds answers/`/plan-first`/`/breakdown-design` through it
-before falling back to grep. Full guide, multi-checkout mode, and the "why these models" rationale:
-**[`tools/code-rag/README.md`](tools/code-rag/README.md)**.
+before falling back to grep. It also **respects `.gitignore`** by default (delegates to `git
+ls-files`, not a hand-rolled parser) so secrets your repo already ignores — `.mcp.json`,
+`service-account.json`, `.env`, … — never get embedded, even though the indexer mounts the working
+tree read-only at the filesystem level. Full guide, multi-checkout mode, and the "why these models"
+rationale: **[`tools/code-rag/README.md`](tools/code-rag/README.md)**.
 
 ## Safe to re-run
 

@@ -24,6 +24,10 @@ services:
       - QDRANT_URL=http://qdrant:6333
       - RERANKER_URL=http://reranker:80
       - HF_TOKEN=${HF_TOKEN:-}
+      - INCLUDE_EXT=${INCLUDE_EXT:-.py,.js,.jsx,.ts,.tsx,.go,.rs,.rb,.php,.java,.kt,.kts,.scala,.swift,.c,.h,.cpp,.hpp,.cs,.sh,.gradle,.md,.rst,.txt,.xml,.yaml,.yml,.toml,.json}
+      - EXCLUDE_DIRS=${EXCLUDE_DIRS:-build,.git,.gradle,node_modules,.idea,dist,target,out,vendor,.venv,venv,__pycache__,.next,.mypy_cache,.pytest_cache}
+      - EXCLUDE_FILES=${EXCLUDE_FILES:-lint-baseline.xml,package-lock.json,pnpm-lock.yaml,yarn.lock,go.sum,Cargo.lock,poetry.lock,composer.lock,.mcp.json}
+      - RESPECT_GITIGNORE=${RESPECT_GITIGNORE:-true}
     extra_hosts: ["host.docker.internal:host-gateway"]
     volumes: ["${REPO_ROOT:-../..}:/repo:ro"]
     depends_on: [qdrant, reranker]
@@ -37,6 +41,10 @@ services:
       - QDRANT_URL=http://qdrant:6333
       - HF_TOKEN=${HF_TOKEN:-}
       - STARTUP_JITTER_SEC=${STARTUP_JITTER_SEC:-0}
+      - INCLUDE_EXT=${INCLUDE_EXT:-.py,.js,.jsx,.ts,.tsx,.go,.rs,.rb,.php,.java,.kt,.kts,.scala,.swift,.c,.h,.cpp,.hpp,.cs,.sh,.gradle,.md,.rst,.txt,.xml,.yaml,.yml,.toml,.json}
+      - EXCLUDE_DIRS=${EXCLUDE_DIRS:-build,.git,.gradle,node_modules,.idea,dist,target,out,vendor,.venv,venv,__pycache__,.next,.mypy_cache,.pytest_cache}
+      - EXCLUDE_FILES=${EXCLUDE_FILES:-lint-baseline.xml,package-lock.json,pnpm-lock.yaml,yarn.lock,go.sum,Cargo.lock,poetry.lock,composer.lock,.mcp.json}
+      - RESPECT_GITIGNORE=${RESPECT_GITIGNORE:-true}
     extra_hosts: ["host.docker.internal:host-gateway"]
     volumes: ["${REPO_ROOT:-../..}:/repo:ro"]
     depends_on: [qdrant]
