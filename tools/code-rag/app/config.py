@@ -33,6 +33,11 @@ class Config(BaseModel):
     rerank_timeout: float = float(os.getenv("RERANK_TIMEOUT", "60"))
     rerank_text_chars: int = int(os.getenv("RERANK_TEXT_CHARS", "256"))
     rerank_min_score: float = float(os.getenv("RERANK_MIN_SCORE", "0.05"))
+    qdrant_timeout: float = float(os.getenv("QDRANT_TIMEOUT", "30"))
+    qdrant_max_retries: int = int(os.getenv("QDRANT_MAX_RETRIES", "3"))
+    embed_max_retries: int = int(os.getenv("EMBED_MAX_RETRIES", "4"))
+    embed_retry_base: float = float(os.getenv("EMBED_RETRY_BASE", "0.75"))
+    startup_jitter_sec: float = float(os.getenv("STARTUP_JITTER_SEC", "0"))
 
 
 cfg = Config()

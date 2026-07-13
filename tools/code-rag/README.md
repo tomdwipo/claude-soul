@@ -67,6 +67,14 @@ Each `up-project` prints the `.mcp.json` entry to add (`code-rag-<folder>` → i
 directory basename** (stable when the folder's branch changes). Single-stack (`make up`) and
 multi-project both bind Qdrant on 6333 — run one mode at a time.
 
+**Adding several projects at once?** Their empty-collection first-indexes hit the single-slot
+Ollama embed + shared Qdrant concurrently. The watcher is hardened for this — Qdrant calls
+retry on timeout instead of crash-looping the container, and embed calls back off + retry
+instead of dropping a file on the first `400`. Spread the cold-start herd with
+`STARTUP_JITTER_SEC=8 make up-project …`. Note: `OLLAMA_NUM_PARALLEL` does **not** widen an
+embedding runner (Ollama pins it to one slot) — concurrency comes from the client-side retry,
+not the server knob.
+
 ## Make targets
 
 | Target | Effect |
@@ -84,6 +92,8 @@ multi-project both bind Qdrant on 6333 — run one mode at a time.
 `INCLUDE_EXT` / `EXCLUDE_DIRS` (comma-separated — tune for your stack), `TOP_K` (default 15),
 `RERANK_CANDIDATES` (50), `RERANK_TEXT_CHARS` (256), `RERANK_MIN_SCORE` (0.05), `RERANK_TIMEOUT` (60), `RERANK_ENABLED`,
 `ORT_THREADS`, `EMBED_MODEL`, `COLLECTION`, `HF_TOKEN` (optional, faster model downloads).
+Resilience/scaling: `QDRANT_TIMEOUT` (30), `QDRANT_MAX_RETRIES` (3), `EMBED_MAX_RETRIES` (4),
+`EMBED_RETRY_BASE` (0.75 s), `STARTUP_JITTER_SEC` (0 — set when starting many projects at once).
 `search_code(query, top_k, candidates)` — the caller can override per query.
 
 ## How it works

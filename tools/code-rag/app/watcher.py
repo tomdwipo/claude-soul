@@ -1,4 +1,5 @@
 import asyncio
+import random
 from pathlib import Path
 
 from watchdog.events import FileSystemEventHandler
@@ -21,7 +22,16 @@ class Handler(FileSystemEventHandler):
 
 
 async def run():
-    await index_paths()
+    if cfg.startup_jitter_sec > 0:
+        delay = random.uniform(0, cfg.startup_jitter_sec)
+        print(f"[watch] startup jitter {delay:.1f}s", flush=True)
+        await asyncio.sleep(delay)
+
+    try:
+        await index_paths()
+    except Exception as e:  # noqa: BLE001
+        print(f"[watch] startup index failed, will retry on next tick: {type(e).__name__} {e}", flush=True)
+
     handler = Handler()
     observer = Observer()
     observer.schedule(handler, cfg.repo_root, recursive=True)
@@ -33,7 +43,11 @@ async def run():
             if handler.pending:
                 batch = list(handler.pending)
                 handler.pending = set()
-                await index_paths(batch)
+                try:
+                    await index_paths(batch)
+                except Exception as e:  # noqa: BLE001
+                    print(f"[watch] batch index failed, re-queueing: {type(e).__name__} {e}", flush=True)
+                    handler.pending |= set(batch)
     finally:
         observer.stop()
         observer.join()

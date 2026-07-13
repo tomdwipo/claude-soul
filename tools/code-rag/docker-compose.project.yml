@@ -13,6 +13,7 @@ services:
       - RERANKER_URL=http://reranker:80
       - COLLECTION=${COLLECTION}
       - HF_TOKEN=${HF_TOKEN:-}
+      - STARTUP_JITTER_SEC=${STARTUP_JITTER_SEC:-0}
     extra_hosts: ["host.docker.internal:host-gateway"]
     volumes: ["${REPO_ROOT}:/repo:ro"]
     networks: [code-rag-net]
