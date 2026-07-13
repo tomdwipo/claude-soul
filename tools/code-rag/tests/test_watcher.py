@@ -26,6 +26,7 @@ def test_excluded_dir_is_ignored(monkeypatch, tmp_path):
 
 def test_gitignored_file_is_ignored(monkeypatch, tmp_path):
     monkeypatch.setattr(watcher.cfg, "repo_root", str(tmp_path))
+    monkeypatch.setattr(watcher.cfg, "include_ext", (".json", ".py"))
     monkeypatch.setattr(watcher, "is_ignored", lambda root, rel: rel == "secret.json")
     h = Handler()
     h.on_any_event(_event(str(tmp_path / "secret.json")))
@@ -35,6 +36,7 @@ def test_gitignored_file_is_ignored(monkeypatch, tmp_path):
 
 def test_respect_gitignore_false_still_pending(monkeypatch, tmp_path):
     monkeypatch.setattr(watcher.cfg, "repo_root", str(tmp_path))
+    monkeypatch.setattr(watcher.cfg, "include_ext", (".json",))
     monkeypatch.setattr(watcher.cfg, "respect_gitignore", False)
     monkeypatch.setattr(watcher, "is_ignored", lambda root, rel: True)
     h = Handler()
