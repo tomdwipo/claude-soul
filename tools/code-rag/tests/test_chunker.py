@@ -37,6 +37,21 @@ def test_empty_file_yields_nothing(tmp_path):
     assert chunks == []
 
 
+def test_vector_drawable_yields_nothing(tmp_path):
+    body = (
+        '<vector xmlns:android="http://schemas.android.com/apk/res/android" '
+        'android:width="24dp">\n  <path android:pathData="M12,2C6.4,2 2,6.4 2,12z"/>\n</vector>\n'
+    )
+    chunks = chunk_file(_write(tmp_path, "ic_foo.xml", body), "ic_foo.xml")
+    assert chunks == []
+
+
+def test_regular_layout_xml_still_chunks(tmp_path):
+    body = '<LinearLayout>\n  <TextView android:text="Hello World" />\n</LinearLayout>\n'
+    chunks = chunk_file(_write(tmp_path, "activity_main.xml", body), "activity_main.xml")
+    assert len(chunks) >= 1
+
+
 def test_content_sha_stable_for_same_text(tmp_path):
     body = "fun a() {}\n"
     a = chunk_file(_write(tmp_path, "A.kt", body), "A.kt")

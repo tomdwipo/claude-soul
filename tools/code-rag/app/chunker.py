@@ -34,9 +34,16 @@ def _lang(p: str) -> str:
     return "xml"
 
 
+def _is_vector_drawable(raw: str) -> bool:
+    return "<vector" in raw[:256] or "android:pathData" in raw[:2048]
+
+
 def chunk_file(abs_path: Path, rel_path: str) -> list[Chunk]:
-    lines = abs_path.read_text("utf-8", "ignore").splitlines()
+    raw = abs_path.read_text("utf-8", "ignore")
     lang = _lang(rel_path)
+    if lang == "xml" and not cfg.index_vector_drawables and _is_vector_drawable(raw):
+        return []
+    lines = raw.splitlines()
     decl = KT_DECL if lang == "kotlin" else MD_HEAD if lang == "markdown" else None
     chunks: list[Chunk] = []
     buf: list[str] = []

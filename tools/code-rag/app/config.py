@@ -26,6 +26,7 @@ class Config(BaseModel):
         "EXCLUDE_FILES",
         "lint-baseline.xml,package-lock.json,pnpm-lock.yaml,yarn.lock,go.sum,Cargo.lock,poetry.lock,composer.lock",
     )
+    index_vector_drawables: bool = os.getenv("INDEX_VECTOR_DRAWABLES", "false").lower() == "true"
     max_chunk_lines: int = int(os.getenv("MAX_CHUNK_LINES", "60"))
     max_chunk_chars: int = int(os.getenv("MAX_CHUNK_CHARS", "2000"))
     overlap_lines: int = int(os.getenv("OVERLAP_LINES", "10"))
